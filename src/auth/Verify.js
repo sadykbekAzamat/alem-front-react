@@ -99,12 +99,13 @@ export default function Verify() {
       }
 
       const token = data?.token || data?.accessToken || data?.data?.token;
+      const refreshToken = data?.data?.refreshToken;
       if (!token) {
         toast.success("Код подтверждён, но токен не получен.");
       } else {
-        localStorage.setItem("authToken", token);
+        localStorage.setItem("token", token);
+        localStorage.setItem("refreshToken", refreshToken);
       }
-
       toast.success("Успешная верификация!");
       navigate("/");
     } catch (err) {
