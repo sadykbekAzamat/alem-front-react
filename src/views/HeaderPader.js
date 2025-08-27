@@ -5,13 +5,13 @@ export default function Header() {
   return (
     <header className="w-full flex items-center justify-between px-6 py-3 shadow-sm bg-white z-50">
       {/* Left side */}
-      <div className="text-3xl font-muller font-bold text-blue-600">Alem</div>
+      <div className="text-3xl font-muller font-bold text-white">Alem</div>
 
       {/* Right side icons */}
       <div className="flex items-center gap-5">
         <button
           type="button"
-          className="relative text-gray-600 hover:text-blue-600"
+          className="relative text-white"
           aria-label="Уведомления"
         >
           <Bell className="h-5 w-5" />
@@ -21,7 +21,7 @@ export default function Header() {
 
         <button
           type="button"
-          className="text-gray-600 hover:text-blue-600"
+          className="text-white "
           aria-label="Чат"
         >
           <MessageCircle className="h-5 w-5" />
