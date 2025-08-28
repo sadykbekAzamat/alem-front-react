@@ -1,5 +1,5 @@
 // About.js
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import upload from "../assets/img/upload.png";
@@ -117,6 +117,56 @@ export default function About() {
       toast.error("Ошибка при сохранении.");
     }
   };
+
+  useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    toast.error("Нет токена авторизации");
+    return;
+  }
+
+  const controller = new AbortController();
+
+  (async () => {
+    try {
+      const res = await fetch(
+        "https://auth-service-58sq.onrender.com/api/v1/auth/me",
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        }
+      );
+
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(txt || `HTTP ${res.status}`);
+      }
+
+      const json = await res.json();
+
+      // Expected shape:
+      // { success: true, user: { id, email, phone, firstName, lastName, createdAt } }
+      const u = json?.user || {};
+
+      setFirstName(u.firstName || "");
+      setLastName(u.lastName || "");
+      setEmail(u.email || "");
+      setPhone(u.phone && u.phone.trim() ? u.phone : "+7 (___) ___ __ __");
+
+      // Fields not present in this endpoint are left as-is:
+      // about, languages, photo/photoUrl
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        console.error(err);
+        toast.error("Не удалось загрузить данные профиля");
+      }
+    }
+  })();
+
+  return () => controller.abort();
+}, []);
+
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">

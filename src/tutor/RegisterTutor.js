@@ -74,6 +74,14 @@ export default function RegisterTutor() {
   const [phone, setPhone] = useState("+7 ");
   const [phoneVerified, setPhoneVerified] = useState(false);
 
+const mapLangCode = (v) => {
+  if (v === "kk") return "kz";
+  return v || "";
+};
+
+const mapLevelToApi = (v) => (v === "C2" ? "native" : v);
+
+
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const otpRefs = [
     useRef(null),
@@ -203,27 +211,61 @@ export default function RegisterTutor() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!isFormValid()) {
-      toast.error("Заполните все обязательные поля.");
-      return;
-    }
-    try {
-      const formData = new FormData();
-      if (photo) formData.append("photo", photo);
-      formData.append("firstName", firstName.trim());
-      formData.append("lastName", lastName.trim());
-      formData.append("gender", gender);
-      formData.append("languages", JSON.stringify(langs));
-      if (phoneVerified) formData.append("phone", `+${onlyDigits(phone)}`);
+  e.preventDefault();
+  if (!isFormValid()) {
+    toast.error("Заполните все обязательные поля.");
+    return;
+  }
 
-      // TODO: отправьте formData на ваш бэкенд
-      toast.success("Профиль сохранён!");
-      navigate("/");
-    } catch (err) {
-      toast.error("Ошибка при сохранении профиля.");
-    }
+  const token =
+    localStorage.getItem("token");
+
+  if (!token) {
+    toast.error("Не найден токен авторизации.");
+    return;
+  }
+
+  // Build payload exactly as API expects
+  const payload = {
+    firstName: firstName.trim(),
+    lastName: lastName.trim(),
+    gender, // "male" | "female"
+
+    // Only send if it's a real URL (blob: URLs from ObjectURL won't work for the server)
+    ...(photoUrl && /^https?:\/\//i.test(photoUrl) ? { photoUrl } : {}),
+
+    languages: langs.map((l) => ({
+      code: mapLangCode(l.language),            // e.g. "kz", "en", "ru"
+      proficiency: mapLevelToApi(l.level),      // e.g. "native", "C1", "B2", ...
+    })),
   };
+
+  try {
+    const res = await fetch(
+      "https://tutor-service-ikls.onrender.com/api/v1/tutors/profile/create",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      throw new Error(errText || `HTTP ${res.status}`);
+    }
+
+    toast.success("Профиль сохранён!");
+    navigate("/tutor/profile/about");
+  } catch (err) {
+    console.error(err);
+    toast.error("Ошибка при сохранении профиля.");
+  }
+};
+
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-gray-10 to-gray-50 px-4">
