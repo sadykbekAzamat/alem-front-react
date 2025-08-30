@@ -55,7 +55,7 @@ const maskPhone = (raw) => {
   return `+7 (${d.slice(1, 4)}) ${d.slice(4, 6)} ** ${d.slice(8, 10)}`;
 };
 
-export default function RegisterTutor() {
+export default function TutorRegister() {
   const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState("");

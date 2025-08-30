@@ -181,12 +181,10 @@ export default function RegisterStudent() {
       return;
     }
 
-    // Build displayName like "Aisulu A."
     const fn = firstName.trim();
     const ln = lastName.trim();
     const displayName = fn && ln ? `${fn} ${ln.charAt(0)}.` : fn || ln || "";
 
-    // Languages → default proficiency C1
     const languages = langs
       .filter((l) => l.language)
       .map((l) => ({
@@ -194,7 +192,6 @@ export default function RegisterStudent() {
         proficiency: "C1",
       }));
 
-    // Use http(s) photoUrl only (blob: is not reachable by backend)
     const payload = {
       firstName: fn,
       lastName: ln,

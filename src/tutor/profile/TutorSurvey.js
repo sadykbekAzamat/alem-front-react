@@ -1,10 +1,10 @@
 // Survey.js
 import { useEffect, useMemo, useState } from "react";
-import upload from "../assets/img/upload.png";
-import plus from "../assets/img/plus.png";
-import down from "../assets/img/down.svg";
+import upload from "../../assets/img/upload.png";
+import plus from "../../assets/img/plus.png";
+import down from "../../assets/img/down.svg";
 
-export default function Survey() {
+export default function TutorSurvey() {
   const [university, setUniversity] = useState("");
   const [certificates, setCertificates] = useState([]);
   const [subject, setSubject] = useState("");

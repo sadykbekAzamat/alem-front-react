@@ -1,9 +1,10 @@
 // src/pages/TutorRoutes.js
 import { Routes, Route, Outlet } from "react-router-dom";
-import RegisterTutor from "./RegisterTutor";
+import RegisterTutor from "./TutorRegister";
 import TutorSidebar from "./TutorSidebar";
 import TutorSidebarPader from "./TutorSidebarPader";
-import ProfileRoutes from "../profile/ProfileRoutes";
+import TutorProfileRoutes from "./profile/TutorProfileRoutes";
+import TutorLessonsRoutes from "./lessons/TutorLessonsRoutes";
 
 // Layout c сайдбаром
 function WithSidebarLayout() {
@@ -21,13 +22,11 @@ function WithSidebarLayout() {
 export default function TutorRoutes() {
   return (
     <Routes>
-      {/* Страница регистрации БЕЗ сайдбара */}
       <Route path="/register" element={<RegisterTutor />} />
 
-      {/* Все страницы ниже — С сайдбаром */}
       <Route element={<WithSidebarLayout />}>
-        <Route path="/profile/*" element={<ProfileRoutes />} />
-        {/* добавляйте сюда другие роуты, которым нужен сайдбар */}
+        <Route path="/profile/*" element={<TutorProfileRoutes />} />
+        <Route path="/lessons/*" element={<TutorLessonsRoutes />} />
       </Route>
     </Routes>
   );

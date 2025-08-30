@@ -6,7 +6,7 @@ export default function TutorSidebar() {
     <div className="fixed top-100 left-0 h-full w-20 bg-gray-50 flex flex-col items-center py-4 shadow-md">
       <nav className="flex flex-col gap-6">
         <Link
-          to="/"
+          to="/tutor/profile"
           className="flex flex-col items-center gap-1 text-black hover:text-blue-600 transition"
         >
           <User size={28} />
@@ -14,7 +14,7 @@ export default function TutorSidebar() {
         </Link>
 
         <Link
-          to="/"
+          to="/tutor/lessons"
           className="flex flex-col items-center gap-1 text-black hover:text-blue-600 transition"
         >
           <Book size={28} />

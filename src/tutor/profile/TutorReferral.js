@@ -2,7 +2,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-export default function Referral() {
+export default function TutorReferral() {
   const [refLink] = useState(
     "https://localhost:3000/ref/alemdegibalapan..." // replace with API response if needed
   );

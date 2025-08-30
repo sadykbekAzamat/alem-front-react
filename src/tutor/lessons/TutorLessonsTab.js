@@ -1,17 +1,13 @@
 ///ProfileTab.jsx
 import { NavLink, useLocation } from "react-router-dom";
-import warning_ from "../assets/img/warning.png";
+import warning_ from "../../assets/img/warning.png";
 
 const tabs = [
-  { label: "О себе", path: "about" },
-  { label: "Предметы", path: "subjects" },
-  { label: "Видео", path: "videos" },
-  { label: "Отзывы", path: "reviews" },
-  { label: "Реферальная система", path: "referral" },
-  { label: "Анкетирование", path: "survey", warning: true },
+  { label: "Активные ученики", path: "active" },
+  { label: "Архив", path: "archive", warning: true },
 ];
 
-export default function ProfileTab() {
+export default function TutorLessonsTab() {
   const { pathname } = useLocation();
   const tabSlugs = tabs.map((t) => t.path);
 
@@ -23,7 +19,7 @@ export default function ProfileTab() {
 
   return (
     <div className="w-full pl-6 pt-3">
-      <h1 className="text-2xl font-muller font-bold text-gray-900 mb-4">Мой профиль</h1>
+      <h1 className="text-2xl font-muller font-bold text-gray-900 mb-4">Мои уроки</h1>
       <nav className="flex gap-5 text-xs font-medium">
         {tabs.map((tab) => {
           const to = `${base}/${tab.path}`.replace(/\/{2,}/g, "/");

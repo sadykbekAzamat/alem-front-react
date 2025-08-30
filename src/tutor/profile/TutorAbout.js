@@ -2,9 +2,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import upload from "../assets/img/upload.png";
-import plus from "../assets/img/plus.png";
-import down from "../assets/img/down.svg";
+import upload from "../../assets/img/upload.png";
+import plus from "../../assets/img/plus.png";
+import down from "../../assets/img/down.svg";
 
 const MAX_FILE_MB = 2;
 const ACCEPTED_TYPES = ["image/png", "image/jpeg"];
@@ -28,7 +28,7 @@ const LEVEL_OPTIONS = [
   { value: "C2", label: "C2 (Proficient)" },
 ];
 
-export default function About() {
+export default function TutorAbout() {
   const navigate = useNavigate();
 
   // Профиль
