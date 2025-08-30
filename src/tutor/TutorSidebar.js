@@ -22,7 +22,7 @@ export default function TutorSidebar() {
         </Link>
 
         <Link
-          to="/calendar"
+          to="/tutor/calendar"
           className="flex flex-col items-center gap-1 text-black hover:text-blue-600 transition"
         >
           <Calendar size={28} />

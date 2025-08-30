@@ -5,6 +5,7 @@ import TutorSidebar from "./TutorSidebar";
 import TutorSidebarPader from "./TutorSidebarPader";
 import TutorProfileRoutes from "./profile/TutorProfileRoutes";
 import TutorLessonsRoutes from "./lessons/TutorLessonsRoutes";
+import TutorCalendarRoutes from "./calendar/TutorCalendarRoutes";
 
 // Layout c сайдбаром
 function WithSidebarLayout() {
@@ -27,6 +28,7 @@ export default function TutorRoutes() {
       <Route element={<WithSidebarLayout />}>
         <Route path="/profile/*" element={<TutorProfileRoutes />} />
         <Route path="/lessons/*" element={<TutorLessonsRoutes />} />
+        <Route path="/calendar/*" element={<TutorCalendarRoutes />} />
       </Route>
     </Routes>
   );
