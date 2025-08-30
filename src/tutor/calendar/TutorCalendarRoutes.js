@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import TutorLessonsTab from "./TutorCalendarTab";
 import TutorCalendarTimetable from "./TutorCalendarTimetable";
 import TutorCalendarSettings from "./TutorCalendarSettings";
+import TutorCalendarGoogle from "./TutorCalendarGoogle";
+import TutorCalendarCalendar from "./TutorCalendarCalendar";
 
 export default function TutorCalendarRoutes() {
   return (
@@ -13,7 +15,8 @@ export default function TutorCalendarRoutes() {
           <Route index element={<Navigate to="calendar" replace />} />
           <Route path="timetable" element={<TutorCalendarTimetable />} />
           <Route path="settings" element={<TutorCalendarSettings />} />
-          
+          <Route path="google" element={<TutorCalendarGoogle />} />
+          <Route path="calendar" element={<TutorCalendarCalendar />} />          
         </Routes>
       </div>
     </div>
