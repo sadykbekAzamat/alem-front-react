@@ -15,17 +15,16 @@ export default function Header() {
           aria-label="Уведомления"
         >
           <Bell className="h-5 w-5" />
-          {/* Пример бейджа количества */}
           {/* <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span> */}
         </button>
 
-        <button
-          type="button"
-          className="text-gray-600 hover:text-blue-600"
+        <a
+          href="/tutor/chat/messages"
           aria-label="Чат"
+          className="text-gray-600 hover:text-blue-600"
         >
           <MessageCircle className="h-5 w-5" />
-        </button>
+        </a>
       </div>
     </header>
   );

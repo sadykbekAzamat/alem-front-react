@@ -1,4 +1,6 @@
 // About.js
+import { storage } from "../../firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -12,11 +14,8 @@ const ABOUT_LIMIT = 250;
 
 const LANGUAGE_OPTIONS = [
   { value: "ru", label: "Русский" },
-  { value: "kk", label: "Казахский" },
+  { value: "kz", label: "Казахский" },
   { value: "en", label: "Английский" },
-  { value: "tr", label: "Турецкий" },
-  { value: "de", label: "Немецкий" },
-  { value: "fr", label: "Французский" },
 ];
 
 const LEVEL_OPTIONS = [
@@ -28,14 +27,29 @@ const LEVEL_OPTIONS = [
   { value: "C2", label: "C2 (Proficient)" },
 ];
 
+async function uploadProfileIcon(file) {
+  const ext = file.name.split(".").pop();
+  const generatedName = `${Date.now()}-${Math.random()
+    .toString(36)
+    .substring(2, 8)}.${ext}`;
+
+  const storageRef = ref(storage, `profile/icons/${generatedName}`);
+  await uploadBytes(storageRef, file);
+
+  const downloadUrl = await getDownloadURL(storageRef);
+  return { generatedName, downloadUrl };
+}
+
 export default function TutorAbout() {
   const navigate = useNavigate();
-
+  const AUTH = process.env.REACT_APP_AUTH;
+  const TUTOR = process.env.REACT_APP_TUTOR;
   // Профиль
   const [firstName, setFirstName] = useState("Aзамат".replace("A", "A")); // можно оставить ""
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("+7 (___) ___ __ __");
   const [email, setEmail] = useState("");
+  const [id, setId] = useState("");
 
   // Редактируемость телефона/почты как в макете с «Изменить»
   const [phoneEditable, setPhoneEditable] = useState(false);
@@ -54,7 +68,7 @@ export default function TutorAbout() {
 
   const onPickFile = () => inputFileRef.current?.click();
 
-  const validateAndSetPhoto = (file) => {
+  const validateAndSetPhoto = async (file) => {
     if (!file) return;
     if (!ACCEPTED_TYPES.includes(file.type)) {
       toast.error("Допустимы только изображения PNG или JPEG.");
@@ -65,8 +79,21 @@ export default function TutorAbout() {
       toast.error(`Файл слишком большой. Максимум ${MAX_FILE_MB} МБ.`);
       return;
     }
-    setPhoto(file);
-    setPhotoUrl(URL.createObjectURL(file));
+
+    try {
+      // local preview
+      setPhotoUrl(URL.createObjectURL(file));
+
+      // upload to Firebase
+      const { generatedName, downloadUrl } = await uploadProfileIcon(file);
+
+      // save in state
+      setPhoto(file);
+      setPhotoUrl(downloadUrl); // real Firebase URL
+    } catch (err) {
+      console.error(err);
+      toast.error("Ошибка при загрузке фото");
+    }
   };
 
   const handleDrop = (e) => {
@@ -76,19 +103,25 @@ export default function TutorAbout() {
   const handleFileChange = (e) => validateAndSetPhoto(e.target.files?.[0]);
 
   // Языки
-  const addLang = () => setLangs((prev) => [...prev, { language: "", level: "" }]);
+  const addLang = () =>
+    setLangs((prev) => [...prev, { language: "", level: "" }]);
   const removeLang = (idx) =>
-    setLangs((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev));
+    setLangs((prev) =>
+      prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev
+    );
   const updateLang = (idx, key, value) =>
-    setLangs((prev) => prev.map((row, i) => (i === idx ? { ...row, [key]: value } : row)));
+    setLangs((prev) =>
+      prev.map((row, i) => (i === idx ? { ...row, [key]: value } : row))
+    );
 
   const remaining = ABOUT_LIMIT - about.length;
 
   const isFormValid = () => {
     if (!firstName.trim() || !lastName.trim()) return false;
-    if (!phone.replace(/\D/g, "").match(/^7\d{10}$/)) return false;
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return false;
-    if (!about.trim()) return false;
+    // if (!phone.replace(/\D/g, "").match(/^7\d{10}$/)) return false;
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+      return false;
+    // if (!about.trim()) return false;
     if (!langs.every((l) => l.language && l.level)) return false;
     return true;
   };
@@ -99,74 +132,148 @@ export default function TutorAbout() {
       toast.error("Заполните обязательные поля.");
       return;
     }
-    try {
-      const formData = new FormData();
-      if (photo) formData.append("photo", photo);
-      formData.append("firstName", firstName.trim());
-      formData.append("lastName", lastName.trim());
-      formData.append("phone", phone);
-      formData.append("email", email.trim());
-      formData.append("about", about.trim());
-      formData.append("languages", JSON.stringify(langs));
 
-      // await fetch("/api/profile/about", { method: "POST", body: formData });
-
-      toast.success("Изменения сохранены!");
-      navigate(-1);
-    } catch {
-      toast.error("Ошибка при сохранении.");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Нет токена авторизации");
+      return;
     }
-  };
 
-  useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    toast.error("Нет токена авторизации");
-    return;
-  }
-
-  const controller = new AbortController();
-
-  (async () => {
     try {
-      const res = await fetch(
-        "https://auth-service-58sq.onrender.com/api/v1/auth/me",
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-          signal: controller.signal,
-        }
-      );
+      const body = {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        photoUrl: photoUrl || "", // ✅ now Firebase download URL
+        languages: langs.map((l) => ({
+          code: l.language,
+          proficiency: l.level,
+        })),
+      };
+
+      const res = await fetch(`${TUTOR}/api/v1/tutors/profile/about`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
 
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
         throw new Error(txt || `HTTP ${res.status}`);
       }
 
-      const json = await res.json();
-
-      // Expected shape:
-      // { success: true, user: { id, email, phone, firstName, lastName, createdAt } }
-      const u = json?.user || {};
-
-      setFirstName(u.firstName || "");
-      setLastName(u.lastName || "");
-      setEmail(u.email || "");
-      setPhone(u.phone && u.phone.trim() ? u.phone : "+7 (___) ___ __ __");
-
-      // Fields not present in this endpoint are left as-is:
-      // about, languages, photo/photoUrl
+      toast.success("Изменения сохранены!");
+      window.location.reload();
     } catch (err) {
-      if (err.name !== "AbortError") {
-        console.error(err);
-        toast.error("Не удалось загрузить данные профиля");
-      }
+      console.error(err);
+      toast.error("Ошибка при сохранении.");
     }
-  })();
+  };
 
-  return () => controller.abort();
-}, []);
+  const handleGetProfile = async (tutorIdArg) => {
+    const tutorId = tutorIdArg || id;
+    if (!tutorId) return;
 
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Нет токена авторизации");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${TUTOR}/api/v1/tutors/${tutorId}`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(txt || `HTTP ${res.status}`);
+      }
+
+      const u = await res.json();
+
+      if (Array.isArray(u.languages)) {
+        const normalized = u.languages
+          .map((l) => ({
+            language: l.code || l.language || "",
+            level: l.proficiency || l.level || "",
+          }))
+          .filter((l) => l.language && l.level);
+
+        if (normalized.length > 0) {
+          setLangs(normalized);
+        }
+      }
+
+      // Фото
+      if (u.photoUrl && /^https?:\/\//i.test(u.photoUrl)) {
+        setPhotoUrl(u.photoUrl);
+        return;
+      }
+
+      const storageKey = u.photoPath || u.photoKey || u.photo || u.photoUrl;
+      if (storageKey) {
+        const path = storageKey.startsWith("profile/")
+          ? storageKey
+          : `profile/icons/${storageKey}`;
+
+        const url = await getDownloadURL(ref(storage, path));
+        setPhotoUrl(url);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Не удалось загрузить данные профиля");
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Нет токена авторизации");
+      return;
+    }
+
+    const controller = new AbortController();
+
+    (async () => {
+      try {
+        const res = await fetch(`${AUTH}/api/v1/auth/me`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        });
+
+        if (!res.ok) {
+          const txt = await res.text().catch(() => "");
+          throw new Error(txt || `HTTP ${res.status}`);
+        }
+
+        const json = await res.json();
+        const u = json?.user || {};
+
+        setFirstName(u.firstName || "");
+        setLastName(u.lastName || "");
+        setEmail(u.email || "");
+        setEmail(u.email || "");
+        setId(u.id || "");
+        setPhone(u.phone && u.phone.trim() ? u.phone : "+7 (___) ___ __ __");
+
+        if (u.id) {
+          await handleGetProfile(u.id);
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error(err);
+          toast.error("Не удалось загрузить данные профиля");
+        }
+      }
+    })();
+
+    return () => controller.abort();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">
@@ -174,7 +281,9 @@ export default function TutorAbout() {
         {/* Левая колонка */}
         <section>
           {/* Имя / Фамилия */}
-          <label className="block text-xs font-muller font-medium text-gray-900">Имя</label>
+          <label className="block text-xs font-muller font-medium text-gray-900">
+            Имя
+          </label>
           <input
             type="text"
             placeholder="Имя"
@@ -183,7 +292,9 @@ export default function TutorAbout() {
             className="mt-1 w-full rounded-xl bg-blue-50 px-3 py-2 font-muller font-regular text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
-          <label className="mt-4 block text-xs font-muller font-medium text-gray-900">Фамилия</label>
+          <label className="mt-4 block text-xs font-muller font-medium text-gray-900">
+            Фамилия
+          </label>
           <input
             type="text"
             placeholder="Фамилия"
@@ -223,7 +334,9 @@ export default function TutorAbout() {
 
           {/* Email c «Изменить» */}
           <div className="mt-4">
-            <label className="block text-xs font-muller font-medium text-gray-900">Почта</label>
+            <label className="block text-xs font-muller font-medium text-gray-900">
+              Почта
+            </label>
             <div className="mt-1 flex items-center gap-3">
               <input
                 type="email"
@@ -263,7 +376,9 @@ export default function TutorAbout() {
                   <div className="relative">
                     <select
                       value={row.language}
-                      onChange={(e) => updateLang(idx, "language", e.target.value)}
+                      onChange={(e) =>
+                        updateLang(idx, "language", e.target.value)
+                      }
                       className="w-full w-full text-sm appearance-none rounded-xl bg-blue-50 px-3 py-2 pr-9 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Русский</option>
@@ -372,7 +487,11 @@ export default function TutorAbout() {
               className="mb-4 flex h-28 w-28 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50"
             >
               {photoUrl ? (
-                <img src={photoUrl} alt="Предпросмотр" className="h-28 w-28 rounded-lg object-cover" />
+                <img
+                  src={photoUrl}
+                  alt="Предпросмотр"
+                  className="h-28 w-28 rounded-lg object-cover"
+                />
               ) : (
                 <img className="w-12" src={upload} alt="загрузить" />
               )}
@@ -408,7 +527,7 @@ export default function TutorAbout() {
               onChange={handleFileChange}
             />
 
-            <div className="mt-4">
+            <div className="mt-4 hidden">
               <button
                 type="button"
                 className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-gray-700 hover:bg-gray-50"
