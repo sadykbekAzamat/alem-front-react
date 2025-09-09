@@ -10,8 +10,7 @@ export default function InitEmailPage() {
   const errorRef = useRef(null);
 
   const API_URL =
-    process.env.REACT_APP_AUTH_API_URL ||
-    "https://auth-service-58sq.onrender.com/api/v1/auth/otp/request";
+    `${process.env.REACT_APP_API}/api/v1/auth/otp/request`;
 
   const validateEmail = (value) => {
     // Moderate validation; let the backend be the ultimate source of truth

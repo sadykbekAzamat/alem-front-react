@@ -3,6 +3,7 @@ import { storage } from "../../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../utils/apiClient";
 import toast from "react-hot-toast";
 import upload from "../../assets/img/upload.png";
 import plus from "../../assets/img/plus.png";
@@ -42,8 +43,11 @@ async function uploadProfileIcon(file) {
 
 export default function TutorAbout() {
   const navigate = useNavigate();
-  const AUTH = process.env.REACT_APP_AUTH;
-  const TUTOR = process.env.REACT_APP_TUTOR;
+  useEffect(() => {
+    api.setUnauthorizedHandler(() => navigate("/login"));
+  }, [navigate]);
+
+  const API = process.env.REACT_APP_API;
   // Профиль
   const [firstName, setFirstName] = useState("Aзамат".replace("A", "A")); // можно оставить ""
   const [lastName, setLastName] = useState("");
@@ -143,26 +147,20 @@ export default function TutorAbout() {
       const body = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        photoUrl: photoUrl || "", // ✅ now Firebase download URL
+        bio: about.trim(),
+        photoUrl: photoUrl || "",
         languages: langs.map((l) => ({
           code: l.language,
           proficiency: l.level,
         })),
       };
 
-      const res = await fetch(`${TUTOR}/api/v1/tutors/profile/about`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
-
+      const res = await api.put(`${API}/api/v1/tutors/profile/about`, body);
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
         throw new Error(txt || `HTTP ${res.status}`);
       }
+
 
       toast.success("Изменения сохранены!");
       window.location.reload();
@@ -183,16 +181,11 @@ export default function TutorAbout() {
     }
 
     try {
-      const res = await fetch(`${TUTOR}/api/v1/tutors/${tutorId}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const res = await api.get(`${API}/api/v1/tutors/${tutorId}`);
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
         throw new Error(txt || `HTTP ${res.status}`);
       }
-
       const u = await res.json();
 
       if (Array.isArray(u.languages)) {
@@ -240,17 +233,11 @@ export default function TutorAbout() {
 
     (async () => {
       try {
-        const res = await fetch(`${AUTH}/api/v1/auth/me`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-          signal: controller.signal,
-        });
-
+        const res = await api.get(`${API}/api/v1/auth/me`, { signal: controller.signal });
         if (!res.ok) {
           const txt = await res.text().catch(() => "");
           throw new Error(txt || `HTTP ${res.status}`);
         }
-
         const json = await res.json();
         const u = json?.user || {};
 
@@ -259,6 +246,7 @@ export default function TutorAbout() {
         setEmail(u.email || "");
         setEmail(u.email || "");
         setId(u.id || "");
+        setAbout(u.bio || "");
         setPhone(u.phone && u.phone.trim() ? u.phone : "+7 (___) ___ __ __");
 
         if (u.id) {
@@ -451,7 +439,7 @@ export default function TutorAbout() {
               </button>
               <button
                 type="button"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/login")}
                 className="w-full rounded-full border-2 border-red-300 text-red-600 font-muller font-medium py-3 hover:bg-red-50"
               >
                 Выйти

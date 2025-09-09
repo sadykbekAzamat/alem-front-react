@@ -56,6 +56,7 @@ const maskPhone = (raw) => {
 };
 
 export default function TutorRegister() {
+  const API_URL = process.env.REACT_APP_API;
   const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState("");
@@ -242,7 +243,7 @@ const mapLevelToApi = (v) => (v === "C2" ? "native" : v);
 
   try {
     const res = await fetch(
-      "https://tutor-service-ikls.onrender.com/api/v1/tutors/profile/create",
+      `${API_URL}/api/v1/tutors/profile/create`,
       {
         method: "POST",
         headers: {

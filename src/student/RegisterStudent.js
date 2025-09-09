@@ -31,6 +31,8 @@ const SUBJECT_OPTIONS = [
 ];
 
 export default function RegisterStudent() {
+
+  const API_URL = process.env.REACT_APP_API;
   const navigate = useNavigate();
   const [languageOptions, setLanguageOptions] = useState([]);
   const [sectionOptions, setSectionOptions] = useState([]);
@@ -131,7 +133,7 @@ export default function RegisterStudent() {
       try {
         // Languages
         const langRes = await fetch(
-          "https://auth-service-58sq.onrender.com/api/v1/admin/languages",
+          `${API_URL}/api/v1/admin/languages`,
           { signal: controller.signal }
         );
         if (!langRes.ok) throw new Error(`LANG HTTP ${langRes.status}`);
@@ -144,7 +146,7 @@ export default function RegisterStudent() {
 
         // Sections
         const secRes = await fetch(
-          "https://auth-service-58sq.onrender.com/api/v1/admin/sections",
+          `${API_URL}/api/v1/admin/sections`,
           { signal: controller.signal }
         );
         if (!secRes.ok) throw new Error(`SECT HTTP ${secRes.status}`);
@@ -203,7 +205,7 @@ export default function RegisterStudent() {
 
     try {
       const res = await fetch(
-        "https://student-service-mt3v.onrender.com/api/v1/students/create",
+        `${API_URL}/api/v1/students/create`,
         {
           method: "POST",
           headers: {

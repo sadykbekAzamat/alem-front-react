@@ -4,6 +4,8 @@ import ProfileTab from "./TutorProfileTab";
 import TutorAbout from "./TutorAbout";
 import TutorSurvey from "./TutorSurvey";
 import TutorReferral from "./TutorReferral";
+import TutorVideo from "./TutorVideo";
+import TutorSubjects from "./TutorSubjects";
 
 export default function TutorProfileRoutes() {
   return (
@@ -15,6 +17,8 @@ export default function TutorProfileRoutes() {
           <Route path="about" element={<TutorAbout />} />
           <Route path="survey" element={<TutorSurvey />} />
           <Route path="referral" element={<TutorReferral />} />
+          <Route path="video" element={<TutorVideo />} />
+          <Route path="subjects" element={<TutorSubjects />} />
           
         </Routes>
       </div>

@@ -4,14 +4,15 @@ import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const CODE_LENGTH = 6;
-const VERIFY_URL =
-  process.env.REACT_APP_AUTH_VERIFY_URL ||
-  "https://auth-service-58sq.onrender.com/api/v1/auth/otp/verify";
-const REQUEST_URL =
-  process.env.REACT_APP_AUTH_REQUEST_URL ||
-  "https://auth-service-58sq.onrender.com/api/v1/auth/otp/request";
+
 
 export default function Verify() {
+  const VERIFY_URL =
+    `${process.env.REACT_APP_API}/api/v1/auth/otp/verify`;
+
+  const REQUEST_URL =
+    `${process.env.REACT_APP_API}/api/v1/auth/otp/request`;
+
   const [code, setCode] = useState(Array.from({ length: CODE_LENGTH }, () => ""));
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);

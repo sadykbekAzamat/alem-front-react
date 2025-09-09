@@ -5,9 +5,9 @@ import toast from "react-hot-toast";
 import img1 from "../assets/img/looking-for-tutor.png";
 import img2 from "../assets/img/wannabe-tutor.png";
 
-const ME_URL = "https://auth-service-58sq.onrender.com/api/v1/auth/me";
-
 export default function WelcomePage() {
+
+  const ME_URL = `${process.env.REACT_APP_API}/api/v1/auth/me`;
   const navigate = useNavigate();
 
   useEffect(() => {
