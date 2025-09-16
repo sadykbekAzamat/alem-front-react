@@ -154,12 +154,14 @@ export default function TutorAbout() {
           proficiency: l.level,
         })),
       };
+      // alert(body.bio);
 
       const res = await api.put(`${API}/api/v1/tutors/profile/about`, body);
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
         throw new Error(txt || `HTTP ${res.status}`);
       }
+
 
 
       toast.success("Изменения сохранены!");
@@ -187,6 +189,7 @@ export default function TutorAbout() {
         throw new Error(txt || `HTTP ${res.status}`);
       }
       const u = await res.json();
+        setAbout(u.bio || "");
 
       if (Array.isArray(u.languages)) {
         const normalized = u.languages
@@ -246,7 +249,6 @@ export default function TutorAbout() {
         setEmail(u.email || "");
         setEmail(u.email || "");
         setId(u.id || "");
-        setAbout(u.bio || "");
         setPhone(u.phone && u.phone.trim() ? u.phone : "+7 (___) ___ __ __");
 
         if (u.id) {
